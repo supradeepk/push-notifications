@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Publish Notification</title>
+</head>
+
+<body>
+  
+  <button onclick="subscribe()">Subscribe Now</button>
+  <button onclick="sendNotification()">Send Notification</button>
+
+  <script>
+    async function subscribe() {
+      const serviceWorker = await navigator.serviceWorker.ready;
+      const push = await serviceWorker.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey:
+          'BE52Jzm0lgHrbFZABcGNcipp3boAzxtxub5bKpouzMLzqkaeq7TJKSMKhxnCDRTUVIuhQxAI1sZmA85Zx_nLf5Q'
+      });
+      console.log(JSON.stringify(push)); // this is the service worker endpoint
+
+      let headers = new Headers();
+      headers.append("Content-Type", "application/json");
+
+      const requestOptions = {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify({ "endpoint" : JSON.stringify(push) })
+      };
+      fetch("subscribe", requestOptions).then(res => {
+        if(res.status == 200) {
+          alert("You have been subscribed to notifications!");
+        }
+      }).catch((e) => {
+        console.log(e);
+      });
+    }
+    async function sendNotification() {
+      const requestOptions = {
+        method: 'POST',
+      };
+
+      fetch("sendNotification", requestOptions)
+        .then(response => response.text())
+        .then(result => console.log(result))
+        .catch(error => console.log('error', error));
+    }
+    if ('serviceWorker' in navigator) {
+      addEventListener('load', async () => {
+        const serviceWorker = await navigator.serviceWorker.register('./serviceWorker.js');
+        console.log(serviceWorker);
+      });
+    }
+  </script>
+</body>
+
+</html>
